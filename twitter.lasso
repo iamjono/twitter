@@ -243,54 +243,38 @@ define twitter => type {
 //	/define_tag;
 	
 
-/*
-	still to convert
-	define_tag(
-		'direct_messages',
-		-opt='since', -type='date',
-		-opt='since_id', -type='integer',
-		-opt='page', -type='integer',
-		-encodenone
-	);
-		local('path') = '/direct_messages.json';
-		params->size ? #path += '?';
-		local_defined('since') ? #path += 'since=' + .date_toHTTP(#since) + '&';
-		local_defined('since_id') ? #path += 'since_id=' + #since_id + '&';
-		local_defined('page') ? #path += 'page=' + #page;
-		#path->removetrailing('&');
-		return(self->retrieve(#path));
-	/define_tag;
+	public direct_messages(-since::date='1971-01-01',-since_id::integer=0,-page::integer=0) => {
+		local(p = array)
+		#since->year > 1971		? #p->insert('since=' + .date_toHTTP(#since))
+		#since_id > 0			? #p->insert('since_id=' + #since_id)
+		#page > 0				? #p->insert('page=' + #page)		
+		return .retrieve('/direct_messages.json'+(#p->size ? '?'+#p->join('&')))
+	}
+
 	
-	define_tag(
-		'sent_direct',
-		-opt='since', -type='date',
-		-opt='since_id', -type='integer',
-		-opt='page', -type='integer',
-		-encodenone
-	);
-		local('path') = '/direct_messages/sent.json';
-		params->size ? #path += '?';
-		local_defined('since') ? #path += 'since=' + .date_toHTTP(#since) + '&';
-		local_defined('since_id') ? #path += 'since_id=' + #since_id + '&';
-		local_defined('page') ? #path += 'page=' + #page;
-		#path->removetrailing('&');
-		return(self->retrieve(#path));
-	/define_tag;
-	
-	define_tag(
-		'new_direct',
-		-req='user',
-		-req='text', -type='string',
-		-encodenone
-	);
-		local('path') = '/direct_messages/new.json';
-		local('post') = array(
+	public sent_direct(-since::date='1971-01-01',-since_id::integer=0,-page::integer=0) => {
+		local(p = array)
+		#since->year > 1971		? #p->insert('since=' + .date_toHTTP(#since))
+		#since_id > 0			? #p->insert('since_id=' + #since_id)
+		#page > 0				? #p->insert('page=' + #page)		
+		return .retrieve('/direct_messages/sent.json'+(#p->size ? '?'+#p->join('&')))
+	}
+
+
+	public new_direct(-user,-text::string) => {
+		local(p = array(
 			'user' = #user,
 			'text' = string_truncate(#text, -length=140)
-		);
+			)
+		)
+		return .retrieve('/direct_messages/new.json',#p)
+	}
+
 		
-		return(self->retrieve(#path, #post));
-	/define_tag;
+/*
+	still to convert
+	
+	
 	
 	define_tag(
 		'destroy_direct',
